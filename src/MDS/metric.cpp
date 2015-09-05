@@ -9,7 +9,7 @@ Solver::Solver(GENOME * mygenome, float min_clash_dist,
                  float min_clash_dist_inter, char * output_pdb,
                  int sphere_radius, int use_weights,
                  int bp_per_locus, int rDNA_frequency_normalizer,
-                 int weight_of_inter, float weight_unseen){
+                 int weight_of_inter, float weight_unseen, char* locus_coord){
   this->mygenome = mygenome;
   this->min_clash_dist = min_clash_dist;
   this->min_clash_dist_inter = min_clash_dist_inter;
@@ -20,6 +20,7 @@ Solver::Solver(GENOME * mygenome, float min_clash_dist,
   this->rDNA_frequency_normalizer = rDNA_frequency_normalizer;
   this->weight_of_inter = weight_of_inter;
   this->weight_unseen = weight_unseen;
+  this->locus_coord = locus_coord;
 }
 
 int Solver::fit(int poisson_model, double alpha, double beta, int max_iter){
@@ -31,7 +32,7 @@ int Solver::fit(int poisson_model, double alpha, double beta, int max_iter){
                       output_pdb, sphere_radius, use_weights,
                       bp_per_locus, rDNA_frequency_normalizer,
                       (float) weight_of_inter, weight_unseen, (bool) poisson_model, alpha,
-                      beta);
+                      beta, locus_coord);
 
   this->app = new IpoptApplication();
 

@@ -1,5 +1,4 @@
 import os
-import sys
 import shutil
 import stat
 import subprocess
@@ -10,6 +9,7 @@ from sklearn.isotonic import IsotonicRegression
 
 from . import write
 from .config import parse
+from shelljob import job
 
 
 max_iter = 5
@@ -18,6 +18,7 @@ CMD_PM = ('%s -o %s -w 8 '
           '-r %d '
           '-k %s '
           '-i %s '
+          '-q %s '
           '-d %f '
           '-c %s -y 1 -a %f -b %f > %s')
 
@@ -26,8 +27,21 @@ CMD_MDS = ('%s -o %s -w 8 '
            '-r %d '
            '-k %s '
            '-i %s '
-           '-d %s '
+           '-q %s '
+           '-d %f '
            '-c %s -y 1 > %s')
+
+
+def centerInteractions(Outpath):
+    if os.path.exists(Outpath):
+       spatialModel = np.loadtxt(Outpath, skiprows=1)
+       print "model has dim of %s %s" % (spatialModel.shape[0], spatialModel.shape[1])
+       center  = spatialModel[:,2:5].sum(axis=0)/spatialModel.shape[0]
+       spatialModel[:, 2:5] = spatialModel[:, 2:5] - center
+
+       rows = np.array(['chrom', 'locus', '3D_x', '3D_y','3D_z'], dtype='|S20')[:, np.newaxis]
+       with open(Outpath, 'w') as f:
+            np.savetxt(f, np.hstack((rows, spatialModel)), delimiter=', ', fmt='%s')
 
 
 def run_mds(directory):
@@ -70,6 +84,13 @@ def run_mds(directory):
                             "MDS." + options["output_name"] + ".temp.txt"),
                X)
 
+    locus_coord = options["output_name"].replace(".pdb",".bed")
+
+    if not os.path.exists(os.path.join(directory,"model")) :
+        os.mkdir(os.path.join(directory,"model"))
+
+    locus_coord = os.path.join("model", locus_coord)
+
     cmd = CMD_MDS % (options["binary_mds"],
                      os.path.join(directory,
                                   "MDS." + options["output_name"]),
@@ -78,18 +99,25 @@ def run_mds(directory):
                                   options["organism_structure"]),
                      os.path.join(directory,
                                   "wish_distances.txt"),
+                     os.path.join(directory,
+                                  locus_coord),
                      options["adjacent_beads"],
                      options["chromosomes"],
                      os.path.join(directory,
                                   'MDS.log'))
 
-    filename = os.path.join(directory, 'MDS.sh')
+    filename = os.path.join(directory, 'MDS.sh')                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
     fileptr = open(filename, 'wb')
     fileptr.write(cmd)
     fileptr.close()
     st = os.stat(filename)
     os.chmod(filename, st.st_mode | stat.S_IXUSR)
-    subprocess.call(filename.split(), shell='True')
+    p = subprocess.Popen(filename.split(), shell='True')
+    p.wait()
+    ## TODO: center interactions
+    #print "centering %s" % locus_coord
+    #centerInteractions(locus_coord)
+    print "Done!"
     return True
 
 
@@ -134,10 +162,9 @@ def compute_wish_distances(counts, alpha=-3, beta=1):
     wish_distances
     """
     if beta == 0:
-        raise ValueError("beta cannot be equal to 0.")
-    wish_distances = counts.copy() / beta
+        raise ValueError('beta cannot be equal to 0.')
+    wish_distances = counts.copy()/ beta
     wish_distances[wish_distances != 0] **= 1. / alpha
-
     return wish_distances
 
 
@@ -211,6 +238,8 @@ def run_nmds(directory):
                              '%d.NMDS.' % (i + 1) + options["output_name"] +
                              ".temp.txt"))
 
+        locus_coord = options["output_name"].replace(".pdb",".bed")
+
         cmd = CMD_MDS % (options["binary_mds"],
                          os.path.join(directory,
                                       "%d.NMDS." % (i + 1) +
@@ -220,6 +249,8 @@ def run_nmds(directory):
                                       options["organism_structure"]),
                          os.path.join(directory,
                                       "%d.NMDS.wish_distances.txt" % (i)),
+                         os.path.join(directory,
+                                      locus_coord),
                          options["adjacent_beads"],
                          options["chromosomes"],
                          os.path.join(directory,
@@ -231,9 +262,8 @@ def run_nmds(directory):
         fileptr.close()
         st = os.stat(filename)
         os.chmod(filename, st.st_mode | stat.S_IXUSR)
-        subprocess.call(filename.split(), shell='True')
-
-
+        p =subprocess.Popen(filename.split(), shell='True')
+        p.wait()
 def run_pm1(directory):
     if os.path.exists(os.path.join(directory,
                                    "config.ini")):
@@ -243,16 +273,12 @@ def run_pm1(directory):
 
     options = parse(config_file)
     run_mds(directory)
-    try:
-        shutil.copy(
-            os.path.join(directory,
-                         "MDS." + options["output_name"] + ".txt"),
-            os.path.join(directory,
-                         'PM1.' + options["output_name"] +
-                         ".temp.txt"))
-    except IOError:
-        print "MDS failed"
-        sys.exit(1)
+    shutil.copy(
+        os.path.join(directory,
+                     "MDS." + options["output_name"] + ".txt"),
+        os.path.join(directory,
+                     'PM1.' + options["output_name"] +
+                     ".temp.txt"))
 
     counts = np.load(os.path.join(directory, options["counts"]))
     lengths = np.loadtxt(
@@ -270,6 +296,7 @@ def run_pm1(directory):
           lengths=lengths,
           resolution=options["resolution"])
 
+    locus_coord = options["output_name"].replace(".pdb",".bed")
     cmd = CMD_PM % (options["binary_pm"],
                     os.path.join(directory,
                                  "PM1." + options["output_name"]),
@@ -277,6 +304,8 @@ def run_pm1(directory):
                     os.path.join(directory, options["organism_structure"]),
                     os.path.join(directory,
                                  'counts.txt'),
+                    os.path.join(directory,
+                                 locus_coord),
                     options["adjacent_beads"],
                     options["chromosomes"],
                     options["alpha"],
@@ -290,7 +319,8 @@ def run_pm1(directory):
     fileptr.close()
     st = os.stat(filename)
     os.chmod(filename, st.st_mode | stat.S_IXUSR)
-    subprocess.call(filename.split(), shell='True')
+    p =subprocess.Popen(filename.split(), shell='True')
+    p.wait()
     return True
 
 
@@ -358,6 +388,8 @@ def run_pm2(directory):
                              '%d.PM2.' % (i + 1) + options["output_name"] +
                              ".temp.txt"))
 
+        locus_coord = options["output_name"].replace(".pdb",".bed")
+
         cmd = CMD_PM % (options["binary_pm"],
                         os.path.join(directory,
                                      "%d.PM2." % (i + 1) +
@@ -367,6 +399,8 @@ def run_pm2(directory):
                                      options["organism_structure"]),
                         os.path.join(directory,
                                      'counts.txt'),
+                        os.path.join(directory,
+                                     locus_coord),
                         options["adjacent_beads"],
                         options["chromosomes"],
                         alpha,
@@ -380,4 +414,5 @@ def run_pm2(directory):
         fileptr.close()
         st = os.stat(filename)
         os.chmod(filename, st.st_mode | stat.S_IXUSR)
-        subprocess.call(filename.split(), shell='True')
+        p =subprocess.Popen(filename.split())
+        p.wait()

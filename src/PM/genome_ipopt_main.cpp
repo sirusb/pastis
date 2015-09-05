@@ -62,6 +62,8 @@ char unseen_interactions_filename[1000] = "";
 char frequencies_distances_filename[1000] = "";
 double weight_unseen = 1;
 
+char locus_coord[1000] = "";
+
 void usage(const char *prog)
 {
     printf("\nUsage: %s -i <interactions_file> [options]\n", prog);
@@ -111,7 +113,7 @@ void get_arguments (int argc, char *argv[])
     extern int optind;
     int errflag = 0;
 
-    while ((c = getopt (argc, argv, "a:b:c:d:e:f:g:h:i:j:k:l:n:r:s:w:y:o:p:t:x:z:?")) != -1)
+    while ((c = getopt (argc, argv, "a:b:c:d:e:f:g:h:i:j:k:l:n:r:s:w:y:o:p:t:x:z:q:?")) != -1)
     {
         switch (c)
         {
@@ -178,6 +180,9 @@ void get_arguments (int argc, char *argv[])
             case 'l':
                 strcpy(logging_filename, optarg);
                 break;
+            case 'q':
+                strcpy(locus_coord, optarg);
+                break;
             case 'h':
             case '?':
             default:
@@ -201,6 +206,8 @@ int main(int argc, char* argv[])
         chromosome[i] = 0;
     }
     char *token;
+
+    
     token = strtok(chrom_string,",");
     while (token != NULL)
     {
@@ -240,6 +247,9 @@ int main(int argc, char* argv[])
         printf ("Reading the txt input\n");
         mygenome->read_txt_input(input_txt);
         mygenome->print_pdb_genome(output_pdb);
+        if(strcmp(locus_coord,"") != 0){
+            mygenome->print_1D_3D_genome(locus_coord);
+        }
         return 1;
     }
     else if (strcmp (output_binary_diffusion, "") != 0)
@@ -260,7 +270,7 @@ int main(int argc, char* argv[])
                                                   rDNA_frequency_normalizer,
                                                   weight_of_inter,
                                                   weight_unseen, true,
-                                                  alpha, beta);
+                                                  alpha, beta, locus_coord);
         mynlp->write_cplex_input (output_cplex_input);
         return 1;
     }
@@ -269,6 +279,9 @@ int main(int argc, char* argv[])
     {
         mygenome->read_cplex_output(input_cplex_output);
         mygenome->print_pdb_genome(output_pdb);
+        if(strcmp(locus_coord,"") != 0){
+            mygenome->print_1D_3D_genome(locus_coord);
+        }
         return 1;
     }
   //mygenome->save_interaction_adjacency_matrix (initial_interaction_matrix);
@@ -279,8 +292,8 @@ int main(int argc, char* argv[])
                               mygenome, min_clash_dist, min_clash_dist_inter,
                               output_pdb, sphere_radius, use_weights,
                               bp_per_locus, rDNA_frequency_normalizer,
-                              weight_of_inter, weight_unseen, true, alpha, beta
-                              );
+                              weight_of_inter, weight_unseen, true, alpha, beta,
+                              locus_coord);
 
   // Create a new instance of IpoptApplication
   //  (use a SmartPtr, not raw)

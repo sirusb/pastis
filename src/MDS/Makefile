@@ -52,7 +52,7 @@ CXXLINKFLAGS =  -Wl,--rpath -Wl,${IPOPTLIBDIR} -Wl,--no-as-needed
 
 
 # Libraries necessary to link with IPOPT
-LIBS = -L$(IPOPTLIBDIR) -lipopt -lpthread -llapack -lblas -lm  -lgfortranbegin -lgfortran -lgcc_s -lcoinhsl -ldl
+LIBS = -L$(IPOPTLIBDIR) -lipopt -lpthread -lcoinlapack -lcoinblas -lm  -lgfortranbegin -lgfortran -lgcc_s -lcoinhsl -ldl
 
 
 # Necessary Include dirs (we use the CYGPATH_W variables to allow

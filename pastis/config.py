@@ -108,7 +108,7 @@ def parse(filename=None):
     # Now process the options so that distances that are set to None are
     # negative
     if options["adjacent_beads"] is None:
-        options["adjacent_beads"] = -1
+        options["adjacent_beads"] = 0.0091
     if options["nucleus_size"] is None:
         options["nucleus_size"] = -1
 

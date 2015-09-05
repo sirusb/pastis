@@ -74,6 +74,8 @@ GENOME::GENOME(int bp_per_locus, double min_dist, double max_dist,
     }
     cout << this->max_num_chrom << endl;
 
+	cout << "bp_per_locus : " << bp_per_locus << endl;
+	
     new_haploid_yeast_genome(chromosome);   // (chromosome);
     printf ("Adding interactions\n");
     this->num_interactions = add_interactions(interactions_filename,
@@ -882,7 +884,7 @@ void GENOME::print_1D_3D_genome (char *filename)
     }
     fprintf (outfile, "chrom\tlocus\t3D_x\t3D_y\t3D_z\n");
 
-
+	cout << "print_1D_3d >> bp_per_locus : " << bp_per_locus << endl;
   int i_atom = 0;
 
   int i_chrom;

@@ -51,7 +51,8 @@ genome_ipopt_nlp::genome_ipopt_nlp(GENOME *mygenome, double min_clash_dist,
                                     int rDNA_frequency_normalizer,
                                     float weight_of_inter, double weight_unseen,
                                     bool poisson_model, double alpha,
-                                    double beta)
+                                    double beta,
+                                    char* locus_coord)
 {
     this->mygenome = mygenome;
     this->output_pdb = output_pdb;
@@ -64,6 +65,7 @@ genome_ipopt_nlp::genome_ipopt_nlp(GENOME *mygenome, double min_clash_dist,
     this->rDNA_frequency_normalizer = rDNA_frequency_normalizer;
     this->weight_unseen = weight_unseen;
     this->poisson_model = true;
+    this->locus_coord = locus_coord;
     this->weighted_objective = 1;
     // weighted objective:
     //  - 0: no weights
@@ -1204,7 +1206,7 @@ void genome_ipopt_nlp::finalize_solution(SolverReturn status,
 {
     // here is where we would store the solution to variables, or write to a file, etc
     // so we could use the solution.
-
+    
     printf("\n\nObjective value\n");
     printf("f(x*) = %e\n", obj_value);
 
@@ -1216,6 +1218,7 @@ void genome_ipopt_nlp::finalize_solution(SolverReturn status,
       mygenome->print_pdb_genome(output_filename);
       sprintf (output_filename, "%s.txt", output_pdb);
       mygenome->save_txt(output_filename);
+      mygenome->print_1D_3D_genome(this->locus_coord);
     }
 }
 

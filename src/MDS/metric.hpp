@@ -13,7 +13,7 @@ class Solver{
             float min_clash_dist_inter, char * output_pdb,
             int sphere_radius, int use_weights,
             int bp_per_locus, int rDNA_frequency_normalizer,
-            int weight_of_inter, float weight_unseen);
+            int weight_of_inter, float weight_unseen, char* locus_coord);
     ~Solver();
     SmartPtr<TNLP> * init_metric(GENOME * mygenome, float min_clash_dist,
                       float min_clash_dist_inter, char * output_pdb,
@@ -34,6 +34,8 @@ class Solver{
     int rDNA_frequency_normalizer;
     int weight_of_inter;
     float weight_unseen;
+    char *locus_coord;
     genome_ipopt_nlp* mynlp;
     IpoptApplication * app;
+
 };

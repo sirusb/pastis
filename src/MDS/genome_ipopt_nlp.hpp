@@ -47,7 +47,8 @@ public:
                    double sphere_radius, int use_frequencies, int bp_per_locus,
                    int rDNA_frequency_normalizer, float weight_of_inter,
                    double weight_unseen, bool poisson_model, double alpha,
-                   double beta);
+                   double beta,
+                   char* locus_coord);
 
   /** default destructor */
   virtual ~genome_ipopt_nlp();
@@ -182,7 +183,7 @@ private:
     double beta;
 
     bool poisson_model;
-
+    char *locus_coord;
   //@}
 };
 

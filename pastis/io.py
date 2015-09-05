@@ -13,7 +13,6 @@ def write(X, filename, lengths=None,
     """
     if copy:
         X = X.copy()
-    X = X.astype(float)
 
     output_file = open(filename, 'w')
 

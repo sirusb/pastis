@@ -880,6 +880,7 @@ void GENOME::print_1D_3D_genome (char *filename)
     if (open_file(filename, "w", TRUE, "1Dto3D", "1Dto3D", &outfile) == 0) {
         exit(1);
     }
+    
     fprintf (outfile, "chrom\tlocus\t3D_x\t3D_y\t3D_z\n");
 
 
