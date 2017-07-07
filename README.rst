@@ -17,6 +17,10 @@ For Pastis:
 For MDS_all and PM_all:
 - ipopt
 
+Note
+----
+This is an older pastis version. It was modified to generated files compatible with the HiC3D-Viewer format. 
+
 Install
 -------
 
